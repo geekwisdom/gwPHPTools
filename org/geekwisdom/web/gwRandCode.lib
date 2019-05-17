@@ -1,0 +1,67 @@
+<?php
+
+class gwRandCodes
+{
+private $charArray = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+private $salt='';
+private $padding=1;
+
+public function __construct($set_salt = '',$new_padding=1)
+{
+$this->padding = $new_padding;
+if ($set_salt == '')
+ {
+ //random
+ $this->salt =bin2hex(random_bytes(10));
+ }
+else
+ {
+ $this->salt = $set_salt;
+ }
+}
+
+private function get_seed($n)
+{
+//return seed padded number for code
+$salt = $this->salt;
+$padding = $this->padding;
+$hash = hash('SHA256',$n.$salt);
+$dec = hexdec(substr($hash,0,$padding));
+$num = $dec %pow(10,$padding);
+if ($num == 0) $num = 1;
+$num = str_pad($num,$padding,'0');
+return $num;
+}
+
+private function get_alpha($n)
+{
+//convert the number $n into a string fomr the array of chars in $s
+$s=$this->charArray;
+$b = strlen($s);
+$m = $n % $b;
+
+if ($n - $m == 0) return substr($s,$n,1);
+$a='';
+while ($m > 0 || $n > 0)
+ {
+  $a = substr($s,$m,1) .$a;
+  $n = ($n - $m) / $b;
+  $m = $n % $b;
+ }
+return $a;
+}
+
+public function encode($num)
+{
+//this is the main functin, it takes a number (eg: 1) and returns a "short code"
+$k=0;
+if ($this->padding > 0 && !empty($this->salt)) 
+  {
+  $k = self::get_seed($num);
+  $num = (int)($k . $num);
+  }
+return self::get_alpha($num);
+}
+
+}
+?>
