@@ -1,5 +1,5 @@
 <?
-include_once("../../../utils/safePDO.php");
+include_once(dirname(__FILE__) . "/../../../utils/safePDO.php");
 class gwSettings {
 private $ApplicationName;
 

@@ -1,5 +1,5 @@
 <?php
-include("gwDataTable.php");
+include("gwDataTable.lib");
 $file=file_get_contents("abc.xml");
 //$xml =simplexml_load_file("student.xml");
 //$result=$xml->xpath("/xmlDS/Student[Name='Mike Gold']"); 

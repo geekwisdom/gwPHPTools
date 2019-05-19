@@ -1,64 +1,80 @@
 <?php
-
-class gwRandCodes
-{
-private $charArray = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-private $salt='';
-private $padding=1;
-
-public function __construct($set_salt = '',$new_padding=1)
-{
-$this->padding = $new_padding;
-if ($set_salt == '')
+include_once("gwRandCode.lib");
+class gwCodes 
+{ 
+ private $codearray=Array();
+ private $file_name="";
+ private $file_path="";
+ private $ext_suffix;
+ public function make_code($JSONstring)
  {
- //random
- $this->salt =bin2hex(random_bytes(10));
+ //given a json string return a code that contains the filename
+ //that contains the data for that string
+ $newcode=array_pop($this->codearray);
+ $fname=$this->file_path . "/" . $newcode . $this->ext_suffix;
+ file_put_contents($fname,$JSONstring);
+ if (count($newcode) < 2) self::build_codes(100); // get new set of codes
+ else file_put_contents($this->file_path . "/" . $this->file_name,json_encode($this->codearray));
+ return $newcode;
  }
-else
+ 
+ public function consume_code($the_code)
  {
- $this->salt = $set_salt;
- }
-}
-
-public static function get_seed($n,$salt,$padding)
-{
-//return seed padded number for code
-$hash = hash('SHA256',$n.$salt);
-$dec = hexdec(substr($hash,0,$padding));
-$num = $dec %pow(10,$padding);
-if ($num == 0) $num = 1;
-$num = str_pad($num,$padding,'0');
-return $num;
-}
-
-private function get_alpha($n,$s)
-{
-//convert the number $n into a string fomr the array of chars in $s
-$b = strlen($s);
-$m = $n % $b;
-
-if ($n - $m == 0) return substr($s,$n,1);
-$a='';
-while ($m > 0 || $n > 0)
+  //given a code, return the contents of the_code flie (json string)
+  //optionally deleting the file if it has a cosumable flag set
+ $file=$this->file_path . "/" . $the_code . $this->ext_suffix;
+  if (!(file_exists($file))) return Array();
+ else 
  {
-  $a = substr($s,$m,1) .$a;
-  $n = ($n - $m) / $b;
-  $m = $n % $b;
+  $nfo = file_get_contents($file);
+  $j=json_decode($nfo,true);
+  if(count($j) ==0) return $nfo;
+  if ( array_key_exists("consumable",$j)) 
+       {
+       print_r($j);     
+  $consume_it=$j["consumable"];
+      if ($consume_it==1) unlink($file);
+       }
  }
-return $a;
-}
+ return $j;
 
-public function encode($num)
-{
-//this is the main functin, it takes a number (eg: 1) and returns a "short code"
-$k=0;
-if ($this->padding > 0 && !empty($this->salt)) 
+ }
+
+ private function build_codes($total_codes=100)
   {
-  $k = self::get_seed($num,$this->salt,$this->padding);
-  $num = (int)($k . $num);
+  //build an array of new codes (100?) that do not already have
+  //files created.
+  //if 'codes.array' already exists read it into array
+  //otherwise create a new array set and write to codes.array
+   $n=new gwRandCodes('',5);
+   $i=0;
+   $done=($i >= $total_codes);
+   while (!($done))
+   {
+   $e=$n->encode($i);
+   if (!(file_exists($this->file_path . "/" . $e . $this->ext_suffix)))
+     {
+	$i++;
+	array_push($this->codearray,$e);
+     }
+
+   $done=($i >= $total_codes);
   }
-return self::get_alpha($num,$this->charArray);
-}
+  file_put_contents($this->file_path . "/" . $this->file_name,json_encode($this->codearray));
+  }
+
+public function __construct($fname="codes.array",$ext=".code")
+ {
+ $this->file_name=basename($fname);
+ $this->file_path=dirname($fname);
+ $this->ext_suffix=$ext;
+ $a=$this->codearray;
+ 
+if (!file_exists($fname)) self::build_codes(100);
+else $this->codearray=json_decode(file_get_contents($fname),true);
+ 
+
+ }
 
 }
 ?>
