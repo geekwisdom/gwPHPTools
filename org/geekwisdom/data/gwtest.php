@@ -6,12 +6,12 @@ $file=file_get_contents("abc.xml");
 //print_r($result);
 //die();
 
-$mydata=new gwDataTable();
+$mydata=new GWDataTable();
 //echo $file;
 $mydata->loadXml($file);
 $ret=$mydata->find("starts-with(MethodName,'GetSetting')");
-//$row = new gwDataColumn(array("Name"=>"Brad", "Age"=>"37", "FavColor"=>"Blue"));
-//$row2 = new gwDataColumn(array("Name"=>"Robyn", "Age"=>"14", "FavColor"=>"Purple"));
+//$row = new GWDataColumn(array("Name"=>"Brad", "Age"=>"37", "FavColor"=>"Blue"));
+//$row2 = new GWDataColumn(array("Name"=>"Robyn", "Age"=>"14", "FavColor"=>"Purple"));
 //$row->set("Name","Joe");
 //$mydata->add($row);
 //$mydata->add($row2);

@@ -1,5 +1,5 @@
 <?php
-class gwDataColumn
+class GWDataColumn
 {
 private $item=array();
 
@@ -30,7 +30,7 @@ return $this->item;
 
 }
 
-class gwDataTable
+class GWDataTable
 {
 private $data=array();
 private $xml="";
@@ -49,10 +49,10 @@ $xml = @simplexml_load_string($data);
 $result=$xml->xpath("/xmlDS/" . $this->tablename ."[" .$whereclause . "]"); 
 $json = json_encode($result);
 $array = json_decode($json,TRUE);
-$retval=new gwDataTable("",$this->tablename);
+$retval=new GWDataTable("",$this->tablename);
 for ($i=0;$i<count($array);$i++)
  {
- $retval->add(new gwDataColumn($array[$i]));
+ $retval->add(new GWDataColumn($array[$i]));
  }
 return $retval;
 //print_r($result);
@@ -72,7 +72,7 @@ $table=array_pop($array);
 $this->tablename=$tablename;
 for ($i=0;$i<count($table);$i++)
  {
- $row=new gwDataColumn($table[$i]);
+ $row=new GWDataColumn($table[$i]);
  $this->add($row);
  }
 
