@@ -1,6 +1,6 @@
 <?
 include_once(dirname(__FILE__) . "/../../../utils/safePDO.php");
-class gwSettings {
+class GWSettings {
 private $ApplicationName;
 
 function __construct($AppName="")
@@ -89,6 +89,20 @@ return $DefaultValue;
 	//If we got here nothing else matched
 	return $DefaultValue;
 }
+
+function GetSettingReverse($FromLocation,$SettingName,$DefaultValue="")
+{
+
+	//Try app settings xpath
+	$xmlstr = file_get_contents($FromLocation);
+	$xmlpath = new SimpleXMLElement($xmlstr);
+	$result = $xmlpath->xpath("/configuration/appSettings/add[@value='" . $SettingName . "']");
+	if (count($result) == 0 ) return $DefaultValue;
+	$retval = $result[0]['key'];
+	if ($retval == "") return $DefaultValue;	
+	return $retval;
+}
+
 
 }
 ?>
