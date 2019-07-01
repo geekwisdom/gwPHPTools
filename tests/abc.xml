@@ -1,0 +1,12 @@
+<xmlDS>
+<WebServices>
+<MethodName>GetSetting</MethodName>
+<MethodType>{call GetSetting (?)}</MethodType>
+<MethodSource>java:jboss/datasources/BradDS</MethodSource>
+</WebServices>
+<WebServices>
+<MethodName>ShowTable</MethodName>
+<MethodType>{call ShowTable (?)}</MethodType>
+<MethodSource>jdbc:mysql://192.168.0.10/braddb?user=root&amp;password=blc4fr</MethodSource>
+</WebServices>
+</xmlDS>

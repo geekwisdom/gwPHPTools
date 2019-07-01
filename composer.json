@@ -1,0 +1,40 @@
+{
+    "name": "geekwisdom/gwPHPTools",
+    "description": "Geek Wisdom Tools for PHP",
+    "keywords": [
+        "GeekWisdom",
+        "Settings","Logging","DataTable"
+    ],
+    "homepage": "https://github.com/geekwisdom/gwPHPTools",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Brad Detchevery",
+            "email": "braddet@gmail.com",
+            "homepage": "https://geekwisdom.org",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : ">=5.3.0",
+	"apache/log4php": "2.3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit" : "4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "org\\geekwisdom\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "org\\geekwisdom\\Test\\": "tests"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
