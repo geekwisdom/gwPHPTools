@@ -5,7 +5,7 @@ use \org\geekwisdom\GWDataTable;
 
 echo "Testing Load XML...\n";
 $mydata=new GWDataTable();
-$file=file_get_contents("student.xml");
+$file=file_get_contents(__DIR__ . "/../tests/student.xml");
 $mydata->loadXml($file);
 echo "Loaded Data is: \n";
 echo $mydata->toXML();
