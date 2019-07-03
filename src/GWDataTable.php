@@ -17,6 +17,7 @@
 '-------------------------------------------------------------------------------*/
 namespace org\geekwisdom;
 require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
+use \org\geekwisdom\GWRowInterface;
 use \org\geekwisdom\GWDataRow;
 use \SimpleXMLElement;
 use \DOMDocument;
@@ -25,15 +26,18 @@ class GWDataTable
 private $data=array();
 private $xml="";
 private $tablename="root";
+private $defobject="\org\geekwisdom\GWDataRow";
 
-function __construct ($_xmlinfo = "",$_tablename="root")
+function __construct ($_xmlinfo = "",$_tablename="root",$defObj="\org\geekwisdom\GWDataRow")
 {
 //construct the $data Array  from xmo
 $this->tablename=$_tablename;
+$this->defobject=$defObj;
 }
 
-function find($whereclause)
+function find($whereclause,$data_type = null)
 {
+if ($data_type == null) $data_type=$this->defobject;
 $data=$this->toXml();
 $xml = @simplexml_load_string($data);
 $result=$xml->xpath("/xmlDS/" . $this->tablename ."[" .$whereclause . "]"); 
@@ -42,8 +46,9 @@ $array = json_decode($json,TRUE);
 $retval=new GWDataTable("",$this->tablename);
 for ($i=0;$i<count($array);$i++)
  {
- $retval->add(new GWDataRow($array[$i]));
- }
+  $retval->add(new $data_type($array[$i]));
+  }
+ 
 return $retval;
 //print_r($result);
 //die();

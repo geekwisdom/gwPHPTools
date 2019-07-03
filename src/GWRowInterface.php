@@ -1,6 +1,6 @@
 <?php
 /* *************************************************************************************
-' Script Name: GWDataRow.php
+' Script Name: GWRowInterface.php
 ' **************************************************************************************
 ' @(#)    Purpose:
 ' @(#)    This is a shared component available to all PHP applications. It allows a common data row / data table
@@ -17,36 +17,11 @@
 '-------------------------------------------------------------------------------*/
 
 namespace org\geekwisdom;
-require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
-use org\geekwisdom\GWRowInterface;
-class GWDataRow implements GWRowInterface
-{
-private $item=array();
 
-function __construct ($ary=null)
+interface GWRowInterface
 {
-if ($ary !== null)
-{
-$this->item=$ary;
-}
-}
-
-function set ($name,$val)
-{
-$this->item[$name]=$val;
-}
-
-function get ($name)
-{
-$a=$this->item;
-$r=$a[$name];
-return $r;
-}
-
-function toArray()
-{
-return $this->item;
-}
-
+public function set ($name,$val);
+public function get ($name);
+public function toArray();
 }
 

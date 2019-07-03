@@ -72,7 +72,7 @@ if (is_file($FromLocation))
 	//if (!(array_key_exists("value",$result[0]))) return $DefaultValue;
 	$retval = $result[0]['value'];
 	if ($retval == "") return $DefaultValue;	
-	return $retval;
+	return (string) $retval;
 	}	
 	return $DefaultValue;
 	}
