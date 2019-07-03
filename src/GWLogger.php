@@ -1,4 +1,20 @@
 <?php
+/**************************************************************************************
+' Script Name: GWLogger.php
+' **************************************************************************************
+' @(#)    Purpose:
+' @(#)    This is a shared component available to all PHP applications. It allows simple
+' @(#)    logging to a central location. The log file name is configurable but defaults to the application name.
+' @(#)    The Log is to be initialized with a specified LogVerbosity. It wraps the apache log4net component
+' @(#)    writes to the log file if the LogLevel <= LogVerbosity as defined by the application
+' **************************************************************************************
+'  Written By: Brad Detchevery
+' Created:     2019-05-29 - Initial Architecture
+' 
+' **************************************************************************************
+'Note: Changing this routine effects all programs that log to a common
+'location.
+'-------------------------------------------------------------------------------*/
 namespace org\geekwisdom;
 require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
 use \org\geekwisdom\GWSettings;

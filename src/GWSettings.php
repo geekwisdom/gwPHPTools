@@ -1,4 +1,20 @@
 <?
+/* *************************************************************************************
+' Script Name: GWSettings.php
+' **************************************************************************************
+' @(#)    Purpose:
+' @(#)    This is a shared component available to all .PHP applications. It allows simple
+' @(#)    settings system that can be used to store and retrieve an application's settings
+' @(#)    You can store settings databases,Property, an INI file, etc.
+' **************************************************************************************
+'  Written By: Brad Detchevery
+              2274 RTE 640, Hanwell NB
+'
+' Created:     2019-05-26 - Initial Architecture
+' 
+' **************************************************************************************
+'Note: Changing this routine effects all programs that change system settings
+'-------------------------------------------------------------------------------*/
 namespace org\geekwisdom;
 use \SimpleXMLElement;
 use \PDO;
