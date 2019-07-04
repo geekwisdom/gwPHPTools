@@ -24,8 +24,9 @@ use \DOMDocument;
 class GWDataFileIO extends GWDataIO
 {
 
-function __construct ()
+function __construct ($ConfigFile = null,$_defaultObj = "\org\geekwisdom\GWDataRow")
 {
+parent::__construct($ConfigFile,$_defaultObj);
 //construct the $data Array  from xmo
 }
 
@@ -49,7 +50,7 @@ $this->saveData($configFile);
 function search($whereclause,$configFile=null)
 {
 $this->loadData($configFile);
-$ret=$this->dataTable->find($whereclause);
+$ret=$this->dataTable->find($whereclause,$this->defaultObj);
 return $ret;
 }
 function update($updatedrow,$configFile=null)
