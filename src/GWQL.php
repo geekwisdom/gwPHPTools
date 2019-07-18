@@ -21,12 +21,20 @@ class GWQL
 {
 private $whereclause="";
 private $SQLPart="";
+private $params=array();
+
 function __construct ($WHERE_CLAUSE = "")
 {
 $this->whereclause=$WHERE_CLAUSE;
 }
 //construct the $data Array  from xmo
 
+function setWhereClause($newclause)
+{
+$this->SQLPart="";
+$this->whereclause=$newclause;
+$this->params=array();
+}
 function find($arry)
 {
 //return the indexes in $array (as an array) that match $WHERE_CLAUSE
@@ -133,6 +141,28 @@ $this->build_outer_string($this->whereclause,"build_xpath",$subst);
 return $this->SQLPart;
 }
 
+function getSQLCommand($start_part,$db)
+{
+//convert $whereclause to valid XPath Equilvent
+$subst=array();
+$subst["OR"]=" or ";
+$subst["AND"]=" and ";
+$subst["LEFTBRACKET"]=" ( ";
+$subst["RIGHTBRACKET"]=" ) ";
+//$subst["OR"]=" or ";
+$this->build_outer_string($this->whereclause,"build_sql",$subst);
+$sqlstr = "$start_part WHERE " . $this->SQLPart . ";";
+//echo "sqlstr is $sqlstr\n";
+//print_r($this->params);
+$stmnt = $db->prepare($sqlstr);
+for ($i=0;$i<count($this->params);$i++) 
+{
+//echo "Binding.." . $this->params[$i] . "\n";
+$stmnt->bindParam($i+1,$this->params[$i]);
+}
+return $stmnt;
+}
+
 
 private function build_xpath($cmp,$subst,$combiner)
 {
@@ -162,6 +192,39 @@ else
 {
 $part = $FD.$OP.$value;
 }
+$this->SQLPart = $this->SQLPart . $part;
+//print_r($combiner);
+if (is_array($combiner)) for ($i=0;$i<count($combiner);$i++) $this->SQLPart = $this->SQLPart . $subst[$combiner[$i]];
+//if ($combiner !="") $this->SQLPart = $this->SQLPart . $subst[$combiner] ;
+ }
+}
+
+
+private function build_sql($cmp,$subst,$combiner)
+{
+//echo $cmp . "\n";
+$FD="NULL";
+$OP="NULL";
+$VL="NULL";
+$r=$this->parse_command($cmp,$FD,$OP,$VL);
+$VL=str_replace("\"","'",$VL);
+if ($r === true)
+ {
+
+if ($OP == "_EQ_") $OP="=";
+elseif ($OP == "_GT_") $OP=">";
+elseif ($OP == "_LT_") $OP="<";
+elseif ($OP == "_GE_") $OP=">=";
+elseif ($OP == "_LE_") $OP="<=";
+elseif ($OP == "_NE_") $OP="!=";
+elseif ($OP == "_LIKE_") $OP="LIKE";
+$value=str_replace("\"","",$VL);
+$value=str_replace("'","",$VL);
+$part = $FD.$OP."?";
+//$part = $FD.$OP.":" . $FD . ":";
+//echo "V: $value\n";
+array_push($this->params,$value);
+
 $this->SQLPart = $this->SQLPart . $part;
 //print_r($combiner);
 if (is_array($combiner)) for ($i=0;$i<count($combiner);$i++) $this->SQLPart = $this->SQLPart . $subst[$combiner[$i]];
