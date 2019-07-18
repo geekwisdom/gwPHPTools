@@ -13,6 +13,15 @@ echo "Testing Find...\n";
 $ret=$mydata->find("Name='Mike Gold'");
 echo "Find Result is: \n";
 echo $ret->toXML();
+//**************
+echo "Testing Find Row...\n";
+$retary=$mydata->find_row("[ Name _EQ_ 'Mike Gold' ]");
+for ($i=0;$i<count($retary);$i++)
+ {
+ $row=$mydata->getRow($retary[$i]);
+ echo "Name is: " . $row->get("Name") . "\n";
+ }
+//**************
 echo "Attempt to Add Record: Brad Detchevery\n";
 $newrow = new GWDataRow();
 $newrow->set("Name","Brad Detchevery");

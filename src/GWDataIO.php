@@ -32,7 +32,7 @@ protected $dataTable;
 protected $_configFile;
 protected $defaultObj;
 
-function __construct ($ConfigFile = null,$_defaultObj = "\org\geekwisdom\GWDataRow")
+function __construct ($ConfigFile = null,$_defaultObj = "\\org\\geekwisdom\\GWDataRow")
 {
 if ($_defaultObj !=null) $this->defaultObj = $_defaultObj;
 if ($ConfigFile != null) $this->_configFile = $ConfigFile;
@@ -47,7 +47,7 @@ if ($configfile == null) $configfile = $this->_configFile;
 $settingsManager = new GWSettings();
 $type = $settingsManager->GetSetting($configfile,"IOTYPE","");
 if ($type == "") return null;
-//echo $type;
+$type=str_replace(".","\\",$type);
 return new $type($configfile,$this->defaultObj);
 }
 
@@ -64,7 +64,7 @@ function update($updatedrow,$configfile=null)
 {
 if ($configfile == null) $configfile = $this->_configFile;
 $tmpobj = $this->getInstance($configfile);
-return $tmpobj->update($newrow,$configfile);
+return $tmpobj->update($updatedrow,$configfile);
 }
 
 

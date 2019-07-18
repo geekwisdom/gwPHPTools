@@ -19,6 +19,7 @@ namespace org\geekwisdom;
 require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
 use \org\geekwisdom\GWRowInterface;
 use \org\geekwisdom\GWDataRow;
+use \org\geekwisdom\GWQL;
 use \SimpleXMLElement;
 use \DOMDocument;
 class GWDataTable
@@ -26,9 +27,9 @@ class GWDataTable
 private $data=array();
 private $xml="";
 private $tablename="root";
-private $defobject="\org\geekwisdom\GWDataRow";
+private $defobject="\\org\\geekwisdom\\GWDataRow";
 
-function __construct ($_xmlinfo = "",$_tablename="root",$defObj="\org\geekwisdom\GWDataRow")
+function __construct ($_xmlinfo = "",$_tablename="root",$defObj="\\org\\geekwisdom\\GWDataRow")
 {
 //construct the $data Array  from xmo
 $this->tablename=$_tablename;
@@ -55,6 +56,20 @@ return $retval;
 
 }
 
+function find_row($whereclause)
+{
+//find the rows whereclause return indexes as array
+$ary=$this->toArray();
+$qltester = new GWQL($whereclause);
+//print_r($this->data);
+$retval = $qltester->find($ary);
+//if ($r == true) echo "COMPARE TRUE";
+//if ($r == false) echo "COMPARE FALSE";
+//echo "\nR is $r\n";
+return $retval;
+}
+
+
 function loadXml($xmlstring)
 {
 //$this->data = array();
@@ -73,11 +88,23 @@ for ($i=0;$i<count($table);$i++)
 
 }
 
-function getRow($rownum)
+function getRow($rownum,$data_type=null)
 {
 //return $data at row $rownum
-return $this->data[$rownum];
+if ($data_type == null) $data_type=$this->defobject;
+//echo "d is $data_type\n";
+return new $data_type($this->data[$rownum]->toArray());
 }
+
+function setRow($rownum,$row_data,$data_type=null)
+{
+//return $data at row $rownum
+if ($data_type == null) $data_type=$this->defobject;
+//echo "d is $data_type\n";
+$this->data[$rownum]=$row_data;
+return;
+}
+
 
 function add($rowitem)
 {
