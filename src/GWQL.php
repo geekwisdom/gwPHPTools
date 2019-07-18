@@ -167,7 +167,7 @@ $FD="NULL";
 $OP="NULL";
 $VL="NULL";
 //$v =explode(" ",$inputstr);
-preg_match_all('/\'(?:\\\\.|[^\\\\"])*\'|\S+/', $inputstr, $matches);
+preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $inputstr, $matches);
 $v=$matches[0];
 //print_r($v);
 $item=0;
@@ -187,7 +187,7 @@ if ($OP == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING OPERATOR IN 
 if ($VL == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING VALUE IN " . $inputstr,26);
 $field=$FD;
 $operator=$OP;
-$value=str_replace("'","",$VL);
+$value=str_replace("\"","",$VL);
 return true;
 }
 
