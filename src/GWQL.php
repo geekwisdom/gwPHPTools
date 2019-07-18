@@ -20,7 +20,7 @@ require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
 class GWQL 
 {
 private $whereclause="";
-
+private $SQLPart="";
 function __construct ($WHERE_CLAUSE = "")
 {
 $this->whereclause=$WHERE_CLAUSE;
@@ -48,20 +48,19 @@ return $ret;
 
 private function compare ($cmp,$arry)
 {
+//echo "HELLOOOO!!!\n";
 $FD="NULL";
 $OP="NULL";
 $VL="NULL";
-$r=$this->parse_compare($cmp,$FD,$OP,$VL);
+$r=$this->parse_command($cmp,$FD,$OP,$VL);
+$VL=str_replace("\"","",$VL);
 if ($r === true)
  {
 if (! array_key_exists($FD,$arry)) throw new GWException("ARRAY MISSING FIELD $FD",30);
-//echo "FD is $FD\n";
-//echo "OP is $OP\n";
-//echo "VL is $VL\n";
 
 if ($OP == "_EQ_")
   {
-  // echo $arry[$FD] . " = " . $VL . "\n";
+   // echo $arry[$FD] . " = " . $VL . "\n";
   if ($arry[$FD] == $VL) return true;
   else return false;
   }
@@ -69,7 +68,7 @@ if ($OP == "_EQ_")
 
 elseif ($OP == "_GT_")
   {
-//   echo $arry[$FD] . " > " . $VL . "\n";
+   // echo $arry[$FD] . " > " . $VL . "\n";
   if ($arry[$FD] > $VL) return true;
   else return false;
   }
@@ -77,35 +76,35 @@ elseif ($OP == "_GT_")
 
 elseif ($OP == "_LT_")
   {
-  // echo $arry[$FD] . " < " . $VL . "\n";
+   // echo $arry[$FD] . " < " . $VL . "\n";
   if ($arry[$FD] < $VL) return true;
   else return false;
   }
 
 elseif ($OP == "_GE_")
   {
-  // echo $arry[$FD] . " >= " . $VL . "\n";
+   // echo $arry[$FD] . " >= " . $VL . "\n";
   if ($arry[$FD] >= $VL) return true;
   else return false;
   }
 
 elseif ($OP == "_LE_")
   {
-  // echo $arry[$FD] . " <- " . $VL . "\n";
+   // echo $arry[$FD] . " <- " . $VL . "\n";
   if ($arry[$FD] <= $VL) return true;
   else return false;
   }
 
 elseif ($OP == "_NE_")
   {
-  // echo $arry[$FD] . " <> " . $VL . "\n";
+   // echo $arry[$FD] . " <> " . $VL . "\n";
   if ($arry[$FD] != $VL) return true;
   else return false;
   }
 
 elseif ($OP == "_LIKE_")
   {
-  // echo $arry[$FD] . " LIKE " . $VL . "\n";
+   // echo $arry[$FD] . " LIKE " . $VL . "\n";
    $p = strpos($arry[$FD],$VL);
   if ($p === false) return false;
   else return true;
@@ -120,8 +119,60 @@ throw new GWException("INVALID OPERATOR: $OP",31);
 }
 }
 
+
+function getXPath()
+{
+//convert $whereclause to valid XPath Equilvent
+$subst=array();
+$subst["OR"]=" or ";
+$subst["AND"]=" and ";
+$subst["LEFTBRACKET"]=" ( ";
+$subst["RIGHTBRACKET"]=" ) ";
+//$subst["OR"]=" or ";
+$this->build_outer_string($this->whereclause,"build_xpath",$subst);
+return $this->SQLPart;
+}
+
+
+private function build_xpath($cmp,$subst,$combiner)
+{
+//echo $cmp . "\n";
+$FD="NULL";
+$OP="NULL";
+$VL="NULL";
+$r=$this->parse_command($cmp,$FD,$OP,$VL);
+$VL=str_replace("\"","'",$VL);
+if ($r === true)
+ {
+
+if ($OP == "_EQ_") $OP="=";
+elseif ($OP == "_GT_") $OP=">";
+elseif ($OP == "_LT_") $OP="<";
+elseif ($OP == "_GE_") $OP=">=";
+elseif ($OP == "_LE_") $OP="<=";
+elseif ($OP == "_NE_") $OP="!=";
+elseif ($OP == "_LIKE_") $OP="contains";
+$value=str_replace("\"","'",$VL);
+
+if ($OP == "contains")
+{
+$part = "contains($FD,$value)";
+}
+else
+{
+$part = $FD.$OP.$value;
+}
+$this->SQLPart = $this->SQLPart . $part;
+//print_r($combiner);
+if (is_array($combiner)) for ($i=0;$i<count($combiner);$i++) $this->SQLPart = $this->SQLPart . $subst[$combiner[$i]];
+//if ($combiner !="") $this->SQLPart = $this->SQLPart . $subst[$combiner] ;
+ }
+}
+
+
 private function rec_compare($cmp,$arry)
 {
+//echo "inside reccompare\n";
 $s = strpos($cmp," _AND_ ");
 if ($s === false) 
  { 
@@ -136,11 +187,37 @@ return $this->rec_compare($v[0],$arry) && $this->rec_compare($v[1],$arry);
 
 }
 
+//$this->rec_build_string($LHS,$custom_function,$arry,"AND");
+private function rec_build_string($cmp,$custom_function,$arry,$COMPAREOP="")
+{
+$s = strpos($cmp," _AND_ ");
+if ($s === false) 
+ { 
+$s = strpos($cmp," _OR_ ");
+if ($s === false) {
+call_user_func(array($this,$custom_function),$cmp,$arry,$COMPAREOP);
+//call_user_func(array($this,$custom_function),$cmp,$arry,"OR");
+return;
+}
+$v = explode (" _OR_ ",$cmp);
+$this->rec_build_string($v[0],$custom_function,$arry,array("OR")) ;
+$this->rec_build_string($v[1],$custom_function,$arry,$COMPAREOP);
+return;
+ }
+$v = explode (" _AND_ ",$cmp);
+$this->rec_build_string($v[0],$custom_function,$arry,array("AND")) ;
+$this->rec_build_string($v[1],$custom_function,$arry,$COMPAREOP);
+return;
+
+
+}
+
 
  
 
 private function parse_compare_outside($inputstr,$arry)
 {
+//echo "HERE !!!!again\n";
 $ret = false;
 $v = preg_split("/[\[\]]+/", $inputstr, -1, PREG_SPLIT_NO_EMPTY);
 //echo $inputstr;
@@ -156,12 +233,53 @@ for ($i=0;$i<count($v);$i++ )
      if ($item == 2) $RHS=$v[$i];
     $item++;
     }
- }
-
+}
+//echo "Comp is $comp\n";
+//print_r($v);
+//die();
 if (trim($comp) == "_AND_") return $this->rec_compare($LHS,$arry) && $this->rec_compare($RHS,$arry);
 if (trim($comp) == "_OR_") return $this->rec_compare($LHS,$arry) || $this->rec_compare($RHS,$arry);
+
 }
-function parse_compare($inputstr,&$field,&$operator,&$value)
+
+
+private function build_outer_string($inputstr,$custom_function,$arry)
+{
+$ret = false;
+$v = preg_split("/[\[\]]+/", $inputstr, -1, PREG_SPLIT_NO_EMPTY);
+//echo $inputstr;
+//print_r($v);
+//die();
+if (count($v) == 1) return $this->rec_build_string($inputstr,$custom_function,$arry);
+$item=0;
+for ($i=0;$i<count($v);$i++ )
+ {
+  if ($v[$i] != "" && $v[$i] != " " && $v[$i] != "[" && $v[$i] != "(" && $v[$i] != "]" && $v[$i] != ")")
+    {
+     if ($item == 0) $LHS=$v[$i];
+     if ($item == 1) $comp=$v[$i];
+     if ($item == 2) $RHS=$v[$i];
+    $item++;
+    }
+ }
+
+if (trim($comp) == "_AND_") 
+ { 
+$this->rec_build_string($LHS,$custom_function,$arry,array("AND","LEFTBRACKET"));
+$this->rec_build_string($RHS,$custom_function,$arry,array("RIGHTBRACKET"));
+return true;
+}
+if (trim($comp) == "_OR_")
+{
+$this->rec_build_string($LHS,$custom_function,$arry,array("OR","LEFTBRACKET"));
+$this->rec_build_string($RHS,$custom_function,$arry,array("RIGHTBRACKET"));
+return true;
+
+}
+}
+
+
+function parse_command($inputstr,&$field,&$operator,&$value)
 {
 $FD="NULL";
 $OP="NULL";
@@ -187,7 +305,8 @@ if ($OP == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING OPERATOR IN 
 if ($VL == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING VALUE IN " . $inputstr,26);
 $field=$FD;
 $operator=$OP;
-$value=str_replace("\"","",$VL);
+$value=$VL;
+//echo "here!: $value\n";
 return true;
 }
 

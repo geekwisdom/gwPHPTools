@@ -1,13 +1,25 @@
 <xmlDS>  
  <Student>  
+  <ID>1</ID>
+  <A>2</A>
+  <B>3</B>
+  <C>9</C>
   <Name>Mahesh Chand</Name>  
   <Address>Meadowlake Dr, Dtown</Address>  
   </Student>  
  <Student>  
+  <ID>2</ID>
+  <A>2</A>
+  <B>3</B>
+  <C>1</C>
   <Name>Mike Gold</Name>  
   <Address>NewYork</Address>  
   </Student>  
  <Student>  
+  <ID>3</ID>
+  <A>0</A>
+  <B>0</B>
+  <C>1</C>
   <Name>Mike Gold</Name>  
   <Address>New York</Address>  
   </Student>  

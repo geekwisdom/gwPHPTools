@@ -4,8 +4,11 @@ use \org\geekwisdom\GWException;
 use \org\geekwisdom\GWQL;
 
 //$COMPARESTRING="[ [ AGE _EQ_ 19 ] _OR_ [ NAME _EQ_ BRADR _OR_ NAME _LIKE_ DAVE ] ] _AND_ [ AGE _EQ_ 9 _OR_ AGE _LT_ 12 ]";
-//$COMPARESTRING="[ AGE _GE_ 7 _AND_ AGE _LE_ 15 ]";
-$COMPARESTRING='[ NAME _EQ_ "BRAD DETCHEVERY" ]';
+//$COMPARESTRING="[ [ AGE _GE_ 7 ] _AND_ [ AGE _GE_ 12 _OR_ AGE _LT_ 15 ] ]";
+//$COMPARESTRING="[ [ AGE _GE_ 7 ] _OR_ [ AGE _LT_ 12 _AND_ AGE _EQ_ 99 ] ]";
+$COMPARESTRING="[ [ AGE _GE_ 7 _OR_ AGE _LT_ 12 ] _AND_ [ AGE _EQ_ 99 ] ]";
+$COMPARESTRING="[ [ AGE _EQ_ 7 _OR_ AGE _LT_ 12 ] _OR_ [ AGE _EQ_ 99 ] ]";
+//$COMPARESTRING='[ NAME _EQ_ "BRAD DETCHEVERY" ]';
 //preg_match_all("/\[[^\]]*\]/", $COMPARESTRING, $matches);
 //preg_match('/\(.*\)/',$COMPARESTRING,$matches,PREG_OFFSET_CAPTURE);
 //print_r($matches);
@@ -19,6 +22,7 @@ $a["AGE"]="$i";
 array_push($b,$a);
 }
 $qltester = new GWQL($COMPARESTRING);
+//$r = $qltester->getXPath($b);
 $r = $qltester->find($b);
 //if ($r == true) echo "COMPARE TRUE";
 //if ($r == false) echo "COMPARE FALSE";

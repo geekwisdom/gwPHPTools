@@ -38,10 +38,19 @@ $this->defobject=$defObj;
 
 function find($whereclause,$data_type = null)
 {
+$qry=$whereclause;
+if (substr($whereclause,0,2) == "[ ")
+ {
+$ary=$this->toArray();
+$qltester = new GWQL($whereclause);
+$qry = $qltester->getXPath();
+//echo "Q is $qry\n";
+ }
+
 if ($data_type == null) $data_type=$this->defobject;
 $data=$this->toXml();
 $xml = @simplexml_load_string($data);
-$result=$xml->xpath("/xmlDS/" . $this->tablename ."[" .$whereclause . "]"); 
+$result=$xml->xpath("/xmlDS/" . $this->tablename ."[" .$qry . "]"); 
 $json = json_encode($result);
 $array = json_decode($json,TRUE);
 $retval=new GWDataTable("",$this->tablename);

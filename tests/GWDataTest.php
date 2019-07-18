@@ -10,12 +10,14 @@ $mydata->loadXml($file);
 echo "Loaded Data is: \n";
 echo $mydata->toXML();
 echo "Testing Find...\n";
-$ret=$mydata->find("Name='Mike Gold'");
+//$ret=$mydata->find("Name='Mike Gold'");
+$ret=$mydata->find("[ Name _LIKE_ \"Mike\" _OR_ ID _EQ_ 1 ]");
 echo "Find Result is: \n";
 echo $ret->toXML();
+die();
 //**************
 echo "Testing Find Row...\n";
-$retary=$mydata->find_row("[ Name _EQ_ 'Mike Gold' ]");
+$retary=$mydata->find_row("[ Name _EQ_ \"Mike Gold\" _OR_ ID _EQ_ 1 ]");
 for ($i=0;$i<count($retary);$i++)
  {
  $row=$mydata->getRow($retary[$i]);
