@@ -1,12 +1,13 @@
 <xmlDS>
 <WebServices>
-<MethodName>GetSetting</MethodName>
-<MethodType>{call GetSetting (?)}</MethodType>
-<MethodSource>java:jboss/datasources/BradDS</MethodSource>
+<OperationName>GetSetting</OperationName>
+<OperationType>call GetSetting (?);</OperationType>
+<OperationSource>mysql:host=192.168.0.15;dbname=braddb;charset=utf8;uid=adminbrad;pw=blc4fr</OperationSource>
 </WebServices>
 <WebServices>
-<MethodName>ShowTable</MethodName>
-<MethodType>{call ShowTable (?)}</MethodType>
-<MethodSource>jdbc:mysql://192.168.0.10/braddb?user=root&amp;password=blc4fr</MethodSource>
+<OperationName>ShowTable</OperationName>
+<OperationType>{call ShowTable (?)}</OperationType>
+<OperationSource>mysql:host=192.168.0.15;dbname=braddb;charset=utf8;uid=adminbrad;pw=blc4fr</OperationSource>
+<AllowedUsers>adminbrad;brad;adminbrad123</AllowedUsers>
 </WebServices>
 </xmlDS>
