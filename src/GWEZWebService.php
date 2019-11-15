@@ -21,10 +21,11 @@ use \org\geekwisdom\GWDataIOInterface;
 use \org\geekwisdom\GWDataTable;
 use \org\geekwisdom\GWDataRow;
 use \org\geekwisdom\GWSettings;
-use \org\geekwisdom\GWSafePDO;
+use \org\geekwisdom\GWDBConnection;
 use \SimpleXMLElement;
 use \DOMDocument;
 use \PDO;
+use \ReflectionMethod;
 class GWEZWebService 
 {
 protected $ServiceFile;
@@ -96,14 +97,28 @@ if (count($FoundRows) > 0)
    $isStoredProcedure = strpos($OpSource,".class.php");
 	if ($isStoredProcedure !== false)
 		{
-		//execute reflection
+		$PArray=Array();
+		$MethodData=Array();
+		$testParse = $this->parseMethod($OpType,$MethodData,$PArray);
+		if ($testParse === false) 
+			{
+			//return a FAULT error invalid parse of OpData
+	  		return "ERROR!";
+			}
 		require_once($OpSource);
-		//todo:add reflectin code here
+		$ClassName = $MethodData["MethodParts"];
+		$MethodName = $MethodData["MethodName"];
+		$reflectionMethod = new ReflectionMethod($ClassName,$MethodName);
+		$classNameBracket=$ClassName . "()";
+		if (strpos ($ClassName,".") == false) $ns="\\" . $ClassName;
+		else $ns=$ClassName;
+		$result = call_user_func_array(array($ns, $MethodName),$Params);
+		return $result;
 		}
 	else
 		{
 		//execute stored procedure
-		$PD = new GWSafePDO($OpSource);
+		$PD = new GWDBConnection($OpSource);
 		$stmt= $PD->prepare($OpType);
 		$cnt=1;
 		foreach ($Params as $key => $val) 
@@ -131,6 +146,99 @@ if (count($FoundRows) > 0)
  }
 
 
+}
+
+private function parseMethod($MethodData,&$methods,&$params)
+{
+//parse Method data eg GWSettings.MySettings.getName(Param1,Param2)
+//should create the 'Prefix GWSettings->MySettings, and the MethodName getname
+//and an array of parameter Names (Param1, Param2). Trainling semicolins
+//are ignored!
+$MethodNaneSide="";
+$MethodParamsSide="";
+$checkOpenBracket = strpos($MethodData,"(");
+$checkClosedBracket = strpos($MethodData,")");
+
+//split method name from parameters
+if ($checkOpenBracket !== false)
+ {
+  if ($checkClosedBracket === false) return false; //parse format error
+  if ($checkClosedBracket < $checkOpenBracket) return false; //parse format error
+  $MethodNameSide = substr($MethodData,0,$checkOpenBracket);
+  $MethodParamsSide =substr($MethodData,$checkOpenBracket);
+ }
+else
+ {
+  $MethodNameSide=$MethodData;
+  $MethodParamsSide="";
+ }
+
+//Split method name
+
+$checkdot = strpos($MethodNameSide,".");
+if ($checkdot !== false)
+ {
+  $gparts = explode(".",$MethodNameSide);
+  $last=count($gparts);
+  $MethodParts=$gparts[0];
+  for ($i=1;$i<$last-1;$i++) $MethodParts = $MethodParts . "->" . $gparts[$i];
+  $MethodName=$gparts[$last-1];
+  $methods["MethodName"] = $MethodName;
+  $methods["MethodParts"] = $MethodParts;
+ }
+else
+ { 
+ $methods["MethodName"] = $MethodNameSide;
+ $methods["MethodParts"] ="";
+	
+ }
+
+//split params $Params=Array(); if 
+if ($this->getParams($MethodParamsSide,$Params))
+ {
+ $params=$Params;
+ return true;
+ }
+return false; //parseerror
+
+}
+
+
+private function getParams($ParamSide,&$Params)
+{
+//given a function containing a format of "(" and ")" get the parameters
+//from the inside useful for both STORED PROCEDURS AND REFLECTION
+
+$checkOpenBracket = strpos($ParamSide,"(");
+$checkClosedBracket = strpos($ParamSide,")");
+
+//split method name from parameters
+if ($checkOpenBracket !== false)
+ {
+  $checkClosedBracket = strpos($ParamSide,")");
+
+  if ($checkClosedBracket === false) return false; //parse format error
+  if ($checkClosedBracket < $checkOpenBracket) return false; //parse format error
+  $ParamData = substr($ParamSide,$checkOpenBracket,$checkClosedBracket-$checkOpenBracket+1);
+  $ParamData = str_replace("(","",$ParamData);
+  $ParamData = str_replace(")","",$ParamData);
+  $ParamData = str_replace(";","",$ParamData);
+  $Params=Array();
+  $checkcomma = strpos($ParamData,",");
+  if ($checkcomma === false) 
+    {
+   $Params[0] = trim($ParamData);
+   return true;
+  }
+  else
+ 	{
+	$parray=explode(",",$ParamData);
+	for ($i=0;$i<count($parray);$i++) $Params[$i]=trim($parray[$i]);
+	return true;
+	}
+  
+ }
+return false; //format/parse error
 }
 
 }

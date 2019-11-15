@@ -82,7 +82,8 @@ return $retval;
 function loadXml($xmlstring)
 {
 //$this->data = array();
-$xml = simplexml_load_string($xmlstring);
+$xmlfixed = preg_replace('/&(?![A-Za-z0-9#]{1,7};)/','&amp;',$xmlstring);
+$xml = simplexml_load_string($xmlfixed);
 $json = json_encode($xml);
 $array = json_decode($json,TRUE);
 $keys = array_keys($array);
@@ -173,6 +174,23 @@ for ($i=0;$i<count($this->data);$i++)
 return $newary;
 }
 
+function readList($ListInput)
+{
+foreach ($ListInput as $key => $val) 
+{
+$newrow = new GWDataRow();
+$newrow->set($key,$val);
+$this->add($newrow);
+}
+}
+
+function toJSON()
+{
+$xml = $this->toXML();
+$xmlary = simplexml_load_string($xml);
+$json = json_encode($xmlary);
+return $json;
+}
 function toXml()
 {
 //output result as xml / set xml

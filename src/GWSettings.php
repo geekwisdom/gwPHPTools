@@ -83,7 +83,7 @@ else
 {
 //echo "Try DB Connection here";
 try {
-$PD = new GWSafePDO($FromLocation);
+$PD = new GWDBConnection($FromLocation);
 $stmt = $PD->prepare("CALL GetSetting (?);");
 $item="LogVerbosity";
 $stmt->bindParam(1,$item);

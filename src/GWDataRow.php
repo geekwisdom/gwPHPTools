@@ -43,6 +43,14 @@ $r=$a[$name];
 return $r;
 }
 
+function has_column($name)
+{
+$a=$this->item;
+if (array_key_exists($name,$a)) return true;
+return false;
+}
+
+
 function toArray()
 {
 return $this->item;

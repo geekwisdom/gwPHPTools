@@ -15,7 +15,7 @@ $COMPARESTRING_A='[ [ A _EQ_ "2" ] _AND_  [ B _EQ_ "3"  _OR_  C _EQ_ "1" ] ]';
 $COMPARESTRING_B='[ [ A _EQ_ "2"  _AND_ B _EQ_ "3" ] _OR_  [ C _EQ_ "1" ] ]';
 $SQL_A='[ SettingName _EQ_ "LogVerbosity" _AND_ SettingName _EQ_ "1" ]';
 $SQL_B='[ SettingName _EQ_ "LogVerbosity" ]';
-$SQL_C='[ SettingValue _GT_ "25" ]';
+$SQL_C='[ SettingValue _GT_ 1 ]';
 
 //$COMPARESTRING='[ Name _EQ_ "Mike Gold" ]';
 

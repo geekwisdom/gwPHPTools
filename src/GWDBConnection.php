@@ -1,12 +1,21 @@
 <?
 namespace org\geekWisdom;
 use \PDO;
-class GWSafePDO extends PDO
+class GWDBConnection extends PDO
 {
 public function __construct($connectstr)
 {
-//$connectstr="mysql:host=192.168.0.15;dbname=braddb;charset=utf8;uid=adminbrad;pw=blc4fr";
+//If $connectstr is a file read the contents of the file instead
+if (file_exists($connectstr))
+{
+$cArray=file($connectstr);
+if (count ($cArray) == 1) $ar=explode(";",$cArray);
+else $ar=$CArray;
+}
+else
+{
 $ar=explode(";",$connectstr);
+}
 $newstr="";
 $un="";
 $pw="";

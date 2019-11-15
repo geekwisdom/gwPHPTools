@@ -1,0 +1,13 @@
+<xmlDS>
+<WebServices>
+<OperationName>Add</OperationName>
+<OperationType>Math.Add(A,B)</OperationType>
+<OperationSource>/home/adminbrad/php/gwPHPTools/tests/test.class.php</OperationSource>
+</WebServices>
+<WebServices>
+<OperationName>ShowTable</OperationName>
+<OperationType>{call ShowTable (?)}</OperationType>
+<OperationSource>mysql:host=192.168.0.15;dbname=braddb;charset=utf8;uid=adminbrad;pw=blc4fr</OperationSource>
+<AllowedUsers>adminbrad;brad;adminbrad123</AllowedUsers>
+</WebServices>
+</xmlDS>
