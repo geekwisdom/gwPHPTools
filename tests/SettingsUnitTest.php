@@ -5,7 +5,7 @@ use \org\geekwisdom\GWSettings;
 
 $connectstr=__DIR__ . "/../tests/testconn.dsn";
 $mysm = new GWSettings();
-$c=$mysm->GetSetting($connectstr,"test","0");
+$c=$mysm->GetSetting($connectstr,"LogVerbosity","1");
 echo "C is $c\n";
 $r = $mysm->GetSetting( __DIR__ . "/../tests/test.config","test","0");
 echo "R is $r\n";	

@@ -9,8 +9,8 @@ public function __construct($connectstr)
 if (file_exists($connectstr))
 {
 $cArray=file($connectstr);
-if (count ($cArray) == 1) $ar=explode(";",$cArray);
-else $ar=$CArray;
+if (count ($cArray) == 1) $ar=explode(";",trim($cArray[0]));
+else $ar=$cArray;
 }
 else
 {
@@ -21,10 +21,10 @@ $un="";
 $pw="";
 for ($i=0;$i<count($ar);$i++)
  {
- $itv = $ar[$i];
+ $itv = trim($ar[$i]);
  if (strpos($itv,"uid=") !== false) {  $un=$itv; }
  elseif (strpos($itv,"pw=") !== false ) { $pw=$itv; }
- else { $newstr = $newstr . ";" . $itv;}
+ else { $newstr = trim($newstr) . ";" . trim($itv);}
  }
 if (substr($newstr,0,1) == ";") $newstr=substr($newstr,1);
 $u=explode("=",$un);

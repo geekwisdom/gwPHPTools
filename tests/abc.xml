@@ -1,0 +1,13 @@
+<xmlDS>
+<WebServices>
+<OperationName>GetSetting</OperationName>
+<OperationType>call GetSetting (?);</OperationType>
+<OperationSource>testconn.dsn</OperationSource>
+</WebServices>
+<WebServices>
+<OperationName>ShowTable</OperationName>
+<OperationType>{call ShowTable (?)}</OperationType>
+<OperationSource>mysql:host=192.168.0.15;dbname=braddb;charset=utf8;uid=adminbrad;pw=blc4fr</OperationSource>
+<AllowedUsers>adminbrad;brad;adminbrad123</AllowedUsers>
+</WebServices>
+</xmlDS>
