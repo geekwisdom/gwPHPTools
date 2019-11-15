@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../vendor/autoload.php"; ///auto load
+require_once __DIR__ . "/../../../autoload.php"; ///auto load
 //require_once __DIR__ . "/../tests/test.class.php"; ///auto load
 use org\geekwisdom\GWEZWebService;
 

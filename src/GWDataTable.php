@@ -16,7 +16,7 @@
 'Note: Changing this routine effects all programs that maniuplate data sets
 '-------------------------------------------------------------------------------*/
 namespace org\geekwisdom;
-require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
+require_once __DIR__ . '/../../../autoload.php'; // Autoload files using
 use \org\geekwisdom\GWRowInterface;
 use \org\geekwisdom\GWDataRow;
 use \org\geekwisdom\GWQL;

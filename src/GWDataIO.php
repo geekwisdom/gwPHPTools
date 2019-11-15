@@ -19,7 +19,7 @@
 'This class defines those protected methods common to all extended children
 ' **************************************************************************************/
 namespace org\geekwisdom;
-require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
+require_once __DIR__ . '/../../../autoload.php'; // Autoload files using
 use \org\geekwisdom\GWDataIOInterface;
 use \org\geekwisdom\GWDataTable;
 use \org\geekwisdom\GWDataRow;

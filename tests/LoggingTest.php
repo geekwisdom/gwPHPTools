@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php'; // Autoload files using
+require_once __DIR__ . '/../../../autoload.php'; // Autoload files using
 use \org\geekwisdom\GWLogger;
 use \org\geekwisdom\LogType;
 
