@@ -192,13 +192,30 @@ return $newary;
 
 function readList($ListInput)
 {
-foreach ($ListInput as $key => $val) 
+if ($this->has_string_keys($ListInput))
 {
-$newrow = new GWDataRow();
-$newrow->set($key,$val);
-$this->add($newrow);
+ $newrow = new GWDataRow();
+ foreach ($ListInput as $key => $val) 
+ {
+	$newrow->set($key,$val);
+ }
+ $this->add($newrow);
 }
+else
+  {
+   for ($i=0;$i<count($ListInput);$i++)
+     {
+    $newrow = new GWDataRow();
+    foreach ($ListInput[$i] as $key => $val) 
+    {
+	$newrow->set($key,$val);
+    }
+    $this->add($newrow);
+
+     }
+  }
 }
+
 
 function toJSON()
 {

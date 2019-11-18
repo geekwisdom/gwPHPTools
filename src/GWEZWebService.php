@@ -198,7 +198,7 @@ if (count($FoundRows) > 0)
 			$cnt++;
 			}
 		$stmt->execute();
-		$rows=$stmt->fetch(PDO::FETCH_ASSOC);
+		$rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
 		
 		if (count($rows) > 0)
 		{
