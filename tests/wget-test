@@ -1,0 +1,1 @@
+wget -O output.txt http://localhost/services/webservice.php --post-file=testxml.xml --header="Content-Type: text/xml; charset=utf-8"

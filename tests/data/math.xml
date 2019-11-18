@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<xmlDS>
+<WebServices>
+<OperationName>Add</OperationName>
+<OperationType>Math.Add(A,B)</OperationType>
+<OperationSource>/home/adminbrad/php/gwPHPTools/tests/test.class.php</OperationSource>
+</WebServices>
+<WebServices>
+<OperationName>Subtract</OperationName>
+<OperationType>Math.Subtract(A,B)</OperationType>
+<OperationSource>/home/adminbrad/php/gwPHPTools/tests/test.class.php</OperationSource>
+<AllowedUsers>Brad</AllowedUsers>
+</WebServices>
+</xmlDS>
