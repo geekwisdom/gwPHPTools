@@ -36,6 +36,11 @@ $this->tablename=$_tablename;
 $this->defobject=$defObj;
 }
 
+function getTableName()
+{
+return $this->tablename;
+}
+
 function find($whereclause,$data_type = null)
 {
 $qry=$whereclause;
@@ -88,13 +93,24 @@ $json = json_encode($xml);
 $array = json_decode($json,TRUE);
 $keys = array_keys($array);
 $tablename=$keys[0];
-$table=array_pop($array);
 $this->tablename=$tablename;
+//handle the case of a single item !
+$table=array_pop($array);
+if ($this->has_string_keys($table))
+ {
+ //only one row in table
+  $row = new GWDataRow($table);
+  $this->add($row);
+ }
+else
+ {
+ //multiple rows
 for ($i=0;$i<count($table);$i++)
  {
  $row=new GWDataRow($table[$i]);
  $this->add($row);
  }
+}
 
 }
 
@@ -206,5 +222,10 @@ $xmlDocument->loadXML($result);
 $retval = $xmlDocument->saveXML();
 return $retval;
 }
+
+private function has_string_keys(array $array) {
+  return count(array_filter(array_keys($array), 'is_string')) > 0;
+}
+
 }
 ?>

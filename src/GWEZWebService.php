@@ -26,6 +26,7 @@ use \SimpleXMLElement;
 use \DOMDocument;
 use \PDO;
 use \ReflectionMethod;
+use \ReflectionClass;
 class GWEZWebService 
 {
 protected $ServiceFile;
@@ -44,16 +45,45 @@ $newrow->set ("faultstring","403 Access Denied");
 $this->fault403->Add($newrow);
 }
 
-function Fulfill($Method,$Params,$format) { //actual "process function' 
+private function showError($faultstring,$detail,$format)
+{
+$errormsg = new GWDataTable("","fault");
+$newrow = new GWDataRow();
+$newrow->set ("code","Server");
+$newrow->set ("faultstring",$faultstring);
+if ($detail !="") $newrow->set ("detail",$detail);
+$errormsg->Add($newrow);
+if ($format == "XML") return $errormsg->toXML();
+if ($format == "JSON") return $errormsg->toJSON();
+return $errormsg;
+}
+
+function Fulfill($Operation,$Params,$format) { //actual "process function' 
 //given a mthod and parameters return the //result in $format 
+
+if ($Operation == "")
+{
+return $this->showError("404 Not Found","Missing Operation: " . $Operation,$format);
+}
+
+
 $FinalOutput=""; $WebServiceConfig = new GWDataTable(); 
 $GWServiceResults = new GWDataTable(); 
+if (!(file_exists($this->ServiceFile)))
+ {
+return $this->showError("404 Not Found","No such service available: " . $this->ServiceName,$format);
+ }
 $GWServiceFile=file_get_contents($this->ServiceFile); 
 $WebServiceConfig->loadXml($GWServiceFile); 
-$FoundRows=$WebServiceConfig->find_row("[ OperationName _EQ_ \"" . $Method . "\" ]");
+$FoundRows=$WebServiceConfig->find_row("[ OperationName _EQ_ \"" . $Operation . "\" ]");
 $OpType="";
 $OpSource="";
 $UserName="";
+if (count($FoundRows) == 0)
+{
+return $this->showError("404 Not Found","No such operation available: " . $Operation,$format);
+}
+
 if (count($FoundRows) > 0)
 	 {
     $FoundRow = $WebServiceConfig->getRow($FoundRows[0]);
@@ -100,19 +130,58 @@ if (count($FoundRows) > 0)
 		$PArray=Array();
 		$MethodData=Array();
 		$testParse = $this->parseMethod($OpType,$MethodData,$PArray);
+		$ECount = count($PArray);
+		$ACount = count($Params);
+		if ($ECount != $ACount)	
+			{
+			return $this->showError("500 Server Error","Incorrect Parameters for Operation " . $Operation,$format);
+			}
 		if ($testParse === false) 
 			{
 			//return a FAULT error invalid parse of OpData
-	  		return "ERROR!";
+			return $this->showError("500 Server Error","Exposed Service formatting error:  " . $Operation,$format);
 			}
 		require_once($OpSource);
 		$ClassName = $MethodData["MethodParts"];
 		$MethodName = $MethodData["MethodName"];
-		$reflectionMethod = new ReflectionMethod($ClassName,$MethodName);
+		$rc="";
+		try
+		{
+		$rc = new ReflectionClass($ClassName);
+		}	
+		catch (Exception $e)
+			{
+		return $this->showError("500 ERROR","No such Class: " . $ClassName,$format);
+			}
+		if (!($rc->hasMethod($MethodName)))
+		{
+		return $this->showError("500 ERROR","No such Method: " . $MethodName,$format);
+		}
+
 		$classNameBracket=$ClassName . "()";
 		if (strpos ($ClassName,".") == false) $ns="\\" . $ClassName;
 		else $ns=$ClassName;
-		$result = call_user_func_array(array($ns, $MethodName),$Params);
+		$obj = new $ns;
+		//TODO: Should arrange the paramstesr (A=1,B=2, such that they
+//		are orded in same format if possible)
+		$NewParams = $this->orderParams($Params);
+		try {
+		$result = call_user_func_array(array($obj, $MethodName),$NewParams);
+		}
+		catch (Exception $e)
+		{
+		return $this->showError("500 ERROR",$e->getMessage(),$format);
+		}
+		if (is_object($result))  $retval = $result;
+		else
+		{
+		 $retval = new GWDataTable("","Results");
+		 $newrow = new GWDataRow();
+		$newrow->set ("Return",$result);
+		$retval->Add($newrow);
+		}
+                if ($format == "XML") return $retval->toXML();
+               if ($format == "JSON") return $retval->toJSON();
 		return $result;
 		}
 	else
@@ -121,9 +190,11 @@ if (count($FoundRows) > 0)
 		$PD = new GWDBConnection($OpSource);
 		$stmt= $PD->prepare($OpType);
 		$cnt=1;
-		foreach ($Params as $key => $val) 
+		$NewParams=$this->orderParams($Params);
+//		foreach ($NewParams as $key => $val) 
+		for ($i=0;$i<count($NewParams);$i++)
 			{
-			$stmt->bindParam($cnt,$Params[$key]);
+			$stmt->bindParam($cnt,$NewParams[$i]);
 			$cnt++;
 			}
 		$stmt->execute();
@@ -146,6 +217,23 @@ if (count($FoundRows) > 0)
  }
 
 
+}
+
+private function orderParams($Params)
+{
+		$NewParams=Array();
+		//Split out any equals
+		for ($i=0;$i<count($Params);$i++)
+			{
+			$p = strpos($Params[$i],"=");
+			if ($p !== false)
+				{
+				$parts=explode("=",$Params[$i]);
+				$NewParams[$i]=$parts[1];
+				}
+			else $NewParams[$i] = $Params[$i];
+			}
+return $NewParams;
 }
 
 private function parseMethod($MethodData,&$methods,&$params)
