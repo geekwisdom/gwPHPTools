@@ -14,21 +14,15 @@ use \org\geekwisdom\GWQL;
 $COMPARESTRING_A='[ [ A _EQ_ "2" ] _AND_  [ B _EQ_ "3"  _OR_  C _EQ_ "1" ] ]';
 $COMPARESTRING_B='[ [ A _EQ_ "2"  _AND_ B _EQ_ "3" ] _OR_  [ C _EQ_ "1" ] ]';
 
-//$COMPARESTRING='[ Name _EQ_ "Mike Gold" ]';
-$qltester = new GWQL($COMPARESTRING_B);
-$qry = $qltester->getXPath();
-echo "Query is $qry\n";
-
-//$qltester = new GWQL($COMPARESTRING_B);
-//$qry = $qltester->getXPath();
-//echo "Query is $qry\n";
-
-//die();
 echo "Testing Load XML...\n";
 $mydata=new GWDataTable();
 $file=file_get_contents(__DIR__ . "/../tests/student.xml");
 $mydata->loadXml($file);
 echo "Testing Find...\n";
+//$qry = "[ ID _EQ_ 1 ]";
+$qry = $COMPARESTRING_A;
+//$qry = "[ Name _LIKE_ \"Mike\" ]";
+//$qry = "[ Name _LIKE_ \"Mike\" ]";
 $ret=$mydata->find($qry);
 echo "Find Result is: \n";
 echo $ret->toXML();

@@ -69,31 +69,25 @@ return $this->showError("404 Not Found","Missing Operation: " . $Operation,$form
 
 $FinalOutput=""; $WebServiceConfig = new GWDataTable(); 
 $GWServiceResults = new GWDataTable(); 
-
 if (!(file_exists($this->ServiceFile)))
  {
 return $this->showError("404 Not Found","No such service available: " . $this->ServiceName,$format);
  }
-
 $GWServiceFile=file_get_contents($this->ServiceFile); 
-
 $WebServiceConfig->loadXml($GWServiceFile); 
-
 //$FoundRows=$WebServiceConfig->find_row("[ OperationName _EQ_ \"" . $Operation . "\" ]");
-$FoundRows=$WebServiceConfig->find("[ OperationName _EQ_ \"" . $Operation . "\" ]");
-
+$FoundRows=$WebServiceConfig->search("[ OperationName _EQ_ \"" . $Operation . "\" ]");
 $OpType="";
 $OpSource="";
 $UserName="";
-
-if ($FoundRows->length() == 0)
+if ($FoundRows->length()) == 0)
 {
 return $this->showError("404 Not Found","No such operation available: " . $Operation,$format);
 }
 
-if ($FoundRows->length() > 0)
+if (count($FoundRows) > 0)
 	 {
-    $FoundRow = $FoundRows->getRow(0);
+    $FoundRow = $WebServiceConfig->getRow($FoundRows[0]);
     $OpType=$FoundRow->get("OperationType");
     $OpSource=$FoundRow->get("OperationSource");
     $AuthEnabled = $FoundRow->has_column("AllowedUsers");
@@ -216,6 +210,11 @@ if ($FoundRows->length() > 0)
 		return $retval;
 		}
 }
+    echo "Found it!\n";
+    echo "MethodType = $OpType\n";
+    echo "MethodSource = $OpSource\n";
+    echo "UserName = $UserName\n";
+
  }
 
 

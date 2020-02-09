@@ -15,364 +15,141 @@
 ' **************************************************************************************/
 namespace org\geekwisdom;
 use org\geekwisdom\GWException;
+use org\geekwisdom\GWXPathBuilder;
 
 require_once __DIR__ . '/../../../autoload.php'; // Autoload files using
 class GWQL 
 {
-private $whereclause="";
-private $SQLPart="";
-private $params=array();
+private $Clause="";
+private $Params;
+private $allowedFields =  array();
+private $cFlags = array();
 
-function __construct ($WHERE_CLAUSE = "")
+function __construct ($clause)
 {
-$this->whereclause=$WHERE_CLAUSE;
+$this->Clause=$clause;
+$Params = array();
 }
 //construct the $data Array  from xmo
 
-function setWhereClause($newclause)
+function setClause($newclause)
 {
-$this->SQLPart="";
-$this->whereclause=$newclause;
-$this->params=array();
+$this->Clause=$clause;
+$Params = array();
 }
-function find($arry)
+
+private function setFlags($clause_input)
 {
-//return the indexes in $array (as an array) that match $WHERE_CLAUSE
-//echo "W: " . $this->whereclause;
-//print_r($arry);
-$ret=Array();
-for ($i=0;$i<count($arry);$i++)
+$last = strrpos($clause_input,"]");
+if ($last == false) return $clause_input;
+$retval = substr($clause_input,0,$last+1);
+if ($last+1 < strlen($clause_input))
  {
-// print_r($arry[$i]);
-if ($this->parse_compare_outside($this->whereclause,$arry[$i]))
+ $flagsStr = substr($clause_input,$last+2);
+ $flags = explode(" ",$clause_input);
+ for ($i=0;$i<count($flags);$i++)
    {
-  //   echo "Found one! $i\n";
-     array_push($ret,$i);
+    $v=true;
+    $flagname=$flags[$i];
+    if (substr($flagname,0,1) == "!") 
+	{
+	 $v=false;
+	$flagname = substr($flagname,1);
+	}
+     $this->cFlags[$flagname]=$v;
    }
-//echo "No Match: $i\n";
  }
-return $ret;
+return $retval;
 }
 
-private function compare ($cmp,$arry)
+
+public function getFlag($flagname)
 {
-//echo "HELLOOOO!!!\n";
-$FD="NULL";
-$OP="NULL";
-$VL="NULL";
-$r=$this->parse_command($cmp,$FD,$OP,$VL);
-$VL=str_replace("\"","",$VL);
-if ($r === true)
- {
-if (! array_key_exists($FD,$arry)) throw new GWException("ARRAY MISSING FIELD $FD",30);
+if (!(array_key_exists($flagname,$this->cFlags))) return false;
+return $this->cFlags[$flagname];
+}
 
-if ($OP == "_EQ_")
-  {
-   // echo $arry[$FD] . " = " . $VL . "\n";
-  if ($arry[$FD] == $VL) return true;
-  else return false;
-  }
-
-
-elseif ($OP == "_GT_")
-  {
-   // echo $arry[$FD] . " > " . $VL . "\n";
-  if ($arry[$FD] > $VL) return true;
-  else return false;
-  }
-
-
-elseif ($OP == "_LT_")
-  {
-   // echo $arry[$FD] . " < " . $VL . "\n";
-  if ($arry[$FD] < $VL) return true;
-  else return false;
-  }
-
-elseif ($OP == "_GE_")
-  {
-   // echo $arry[$FD] . " >= " . $VL . "\n";
-  if ($arry[$FD] >= $VL) return true;
-  else return false;
-  }
-
-elseif ($OP == "_LE_")
-  {
-   // echo $arry[$FD] . " <- " . $VL . "\n";
-  if ($arry[$FD] <= $VL) return true;
-  else return false;
-  }
-
-elseif ($OP == "_NE_")
-  {
-   // echo $arry[$FD] . " <> " . $VL . "\n";
-  if ($arry[$FD] != $VL) return true;
-  else return false;
-  }
-
-elseif ($OP == "_LIKE_")
-  {
-   // echo $arry[$FD] . " LIKE " . $VL . "\n";
-   $p = strpos($arry[$FD],$VL);
-  if ($p === false) return false;
-  else return true;
-  }
-
-
-
- }
-else
+public function setAllowedFields($Fields)
 {
-throw new GWException("INVALID OPERATOR: $OP",31);
-}
+$this->allowedFields=$Fields;
 }
 
-
-function getXPath()
+public function getCommand($cmdObj)
 {
-//convert $whereclause to valid XPath Equilvent
-$subst=array();
-$subst["OR"]=" or ";
-$subst["AND"]=" and ";
-$subst["LEFTBRACKET"]=" ( ";
-$subst["RIGHTBRACKET"]=" ) ";
-//$subst["OR"]=" or ";
-$this->build_outer_string($this->whereclause,"build_xpath",$subst);
-return $this->SQLPart;
+$this->build_outer_string($this->Clause,$cmdObj);
+return $cmdObj->getFinalCmd();
 }
 
-function getSQLCommand($start_part,$db)
+private function build_outer_string($inputstr,$cmdObj)
 {
-//convert $whereclause to valid XPath Equilvent
-$subst=array();
-$subst["OR"]=" or ";
-$subst["AND"]=" and ";
-$subst["LEFTBRACKET"]=" ( ";
-$subst["RIGHTBRACKET"]=" ) ";
-//$subst["OR"]=" or ";
-$this->build_outer_string($this->whereclause,"build_sql",$subst);
-$sqlstr = "$start_part WHERE " . $this->SQLPart . ";";
-//echo "sqlstr is $sqlstr\n";
-//print_r($this->params);
-$stmnt = $db->prepare($sqlstr);
-for ($i=0;$i<count($this->params);$i++) 
-{
-//echo "Binding.." . $this->params[$i] . "\n";
-$stmnt->bindParam($i+1,$this->params[$i]);
-}
-return $stmnt;
-}
-
-
-private function build_xpath($cmp,$subst,$combiner)
-{
-//echo $cmp . "\n";
-$FD="NULL";
-$OP="NULL";
-$VL="NULL";
-$r=$this->parse_command($cmp,$FD,$OP,$VL);
-$VL=str_replace("\"","'",$VL);
-if ($r === true)
- {
-
-if ($OP == "_EQ_") $OP="=";
-elseif ($OP == "_GT_") $OP=">";
-elseif ($OP == "_LT_") $OP="<";
-elseif ($OP == "_GE_") $OP=">=";
-elseif ($OP == "_LE_") $OP="<=";
-elseif ($OP == "_NE_") $OP="!=";
-elseif ($OP == "_LIKE_") $OP="contains";
-$value=str_replace("\"","'",$VL);
-
-if ($OP == "contains")
-{
-$part = "contains($FD,$value)";
-}
-else
-{
-$part = $FD.$OP.$value;
-}
-$this->SQLPart = $this->SQLPart . $part;
-//print_r($combiner);
-if (is_array($combiner)) for ($i=0;$i<count($combiner);$i++) $this->SQLPart = $this->SQLPart . $subst[$combiner[$i]];
-//if ($combiner !="") $this->SQLPart = $this->SQLPart . $subst[$combiner] ;
- }
-}
-
-
-private function build_sql($cmp,$subst,$combiner)
-{
-//echo $cmp . "\n";
-$FD="NULL";
-$OP="NULL";
-$VL="NULL";
-$r=$this->parse_command($cmp,$FD,$OP,$VL);
-$VL=str_replace("\"","'",$VL);
-if ($r === true)
- {
-
-if ($OP == "_EQ_") $OP="=";
-elseif ($OP == "_GT_") $OP=">";
-elseif ($OP == "_LT_") $OP="<";
-elseif ($OP == "_GE_") $OP=">=";
-elseif ($OP == "_LE_") $OP="<=";
-elseif ($OP == "_NE_") $OP="!=";
-elseif ($OP == "_LIKE_") $OP="LIKE";
-$value=str_replace("\"","",$VL);
-$value=str_replace("'","",$VL);
-$part = $FD.$OP."?";
-//$part = $FD.$OP.":" . $FD . ":";
-//echo "V: $value\n";
-array_push($this->params,$value);
-
-$this->SQLPart = $this->SQLPart . $part;
-//print_r($combiner);
-if (is_array($combiner)) for ($i=0;$i<count($combiner);$i++) $this->SQLPart = $this->SQLPart . $subst[$combiner[$i]];
-//if ($combiner !="") $this->SQLPart = $this->SQLPart . $subst[$combiner] ;
- }
-}
-
-
-private function rec_compare($cmp,$arry)
-{
-//echo "inside reccompare\n";
-$s = strpos($cmp," _AND_ ");
-if ($s === false) 
- { 
-$s = strpos($cmp," _OR_ ");
-if ($s === false) return $this->compare($cmp,$arry);
-$v = explode (" _OR_ ",$cmp);
-return $this->rec_compare($v[0],$arry) || $this->rec_compare($v[1],$arry);
- }
-$v = explode (" _AND_ ",$cmp);
-return $this->rec_compare($v[0],$arry) && $this->rec_compare($v[1],$arry);
-
-
-}
-
-//$this->rec_build_string($LHS,$custom_function,$arry,"AND");
-private function rec_build_string($cmp,$custom_function,$arry,$COMPAREOP="")
-{
-$s = strpos($cmp," _AND_ ");
-if ($s === false) 
- { 
-$s = strpos($cmp," _OR_ ");
-if ($s === false) {
-call_user_func(array($this,$custom_function),$cmp,$arry,$COMPAREOP);
-//call_user_func(array($this,$custom_function),$cmp,$arry,"OR");
-return;
-}
-$v = explode (" _OR_ ",$cmp);
-$this->rec_build_string($v[0],$custom_function,$arry,array("OR")) ;
-$this->rec_build_string($v[1],$custom_function,$arry,$COMPAREOP);
-return;
- }
-$v = explode (" _AND_ ",$cmp);
-$this->rec_build_string($v[0],$custom_function,$arry,array("AND")) ;
-$this->rec_build_string($v[1],$custom_function,$arry,$COMPAREOP);
-return;
-
-
-}
-
-
- 
-
-private function parse_compare_outside($inputstr,$arry)
-{
-//echo "HERE !!!!again\n";
-$ret = false;
-$v = preg_split("/[\[\]]+/", $inputstr, -1, PREG_SPLIT_NO_EMPTY);
-//echo $inputstr;
-//print_r($v);
-if (count($v) == 1) return $this->rec_compare($inputstr,$arry);
-$item=0;
+//echo "I is $inputstr\n";
+$retval = false;
+$regExp="/[\[\]]+/";
+$LHS="";
+$RHS="";
+$comp="";
+//$v = preg_split($regExp, $inputstr, -1, PREG_SPLIT_NO_EMPTY);
+//preg_match($regExp, $inputstr, $matches, PREG_OFFSET_CAPTURE);
+//preg_match($regExp, $inputstr, $matches);
+$itemCount=-1;
+/*
 for ($i=0;$i<count($v);$i++ )
  {
   if ($v[$i] != "" && $v[$i] != " " && $v[$i] != "[" && $v[$i] != "(" && $v[$i] != "]" && $v[$i] != ")")
     {
-     if ($item == 0) $LHS=$v[$i];
-     if ($item == 1) $comp=$v[$i];
-     if ($item == 2) $RHS=$v[$i];
-    $item++;
-    }
-}
-//echo "Comp is $comp\n";
-//print_r($v);
-//die();
-if (trim($comp) == "_AND_") return $this->rec_compare($LHS,$arry) && $this->rec_compare($RHS,$arry);
-if (trim($comp) == "_OR_") return $this->rec_compare($LHS,$arry) || $this->rec_compare($RHS,$arry);
-
-}
-
-
-private function build_outer_string($inputstr,$custom_function,$arry)
-{
-$ret = false;
-$v = preg_split("/[\[\]]+/", $inputstr, -1, PREG_SPLIT_NO_EMPTY);
-//echo $inputstr;
-//print_r($v);
-//die();
-if (count($v) == 1) return $this->rec_build_string($inputstr,$custom_function,$arry);
-$item=0;
-for ($i=0;$i<count($v);$i++ )
- {
-  if ($v[$i] != "" && $v[$i] != " " && $v[$i] != "[" && $v[$i] != "(" && $v[$i] != "]" && $v[$i] != ")")
-    {
-     if ($item == 0) $LHS=$v[$i];
-     if ($item == 1) $comp=$v[$i];
-     if ($item == 2) $RHS=$v[$i];
-    $item++;
+    $itemCount++;
+     if ($itemCount == 0) $LHS= "[ " . $v[$i] . " ]";
+     if ($itemCount == 1) $comp=$v[$i];
+     if ($itemCount == 2) $RHS="[ " . $v[$i] . " ]";
     }
  }
 
 if (trim($comp) == "_AND_") 
  { 
-$this->rec_build_string($LHS,$custom_function,$arry,array("AND","LEFTBRACKET"));
-$this->rec_build_string($RHS,$custom_function,$arry,array("RIGHTBRACKET"));
+$LHS_SIDE=array();
+$RHS_SIDE=array();
+array_push($LHS_SIDE,"AND");
+$this->rec_build_string($LHS,$cmdObj,$LHS_SIDE);
+$this->rec_build_string($RHS,$cmdObj,$RHS_SIDE);
 return true;
 }
-if (trim($comp) == "_OR_")
+*/
+
+if ($itemCount == -1) return $this->rec_build_string($inputstr,$cmdObj,array());
+return $retval;
+}
+
+private function rec_build_string($cmp,$cmdObj,$substs)
 {
-$this->rec_build_string($LHS,$custom_function,$arry,array("OR","LEFTBRACKET"));
-$this->rec_build_string($RHS,$custom_function,$arry,array("RIGHTBRACKET"));
+//echo "CMP is $cmp\n";
+$and_test = strpos($cmp," _AND_ ");
+if ($and_test === false) 
+ { 
+$or_test = strpos($cmp," _OR_ ");
+if ($or_test === false) {
+$cmdObj->buildString($cmp,$substs,$this->allowedFields);
 return true;
-
 }
-}
-
-
-function parse_command($inputstr,&$field,&$operator,&$value)
-{
-$FD="NULL";
-$OP="NULL";
-$VL="NULL";
-//$v =explode(" ",$inputstr);
-preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $inputstr, $matches);
-$v=$matches[0];
-//print_r($v);
-$item=0;
-for ($i=0;$i<count($v);$i++ )
- {
-  if ($v[$i] != "" && $v[$i] != " " && $v[$i] != "[" && $v[$i] != "(" && $v[$i] != "]" && $v[$i] != ")")
-    {
-     if ($item == 0) $FD=$v[$i];
-     if ($item == 1) $OP=$v[$i];
-     if ($item == 2) $VL=$v[$i];
-    $item++;
-    }
+$parts = explode (" _OR_ ",$cmp);
+$the_or=array();
+array_push($the_or,"OR");
+$this->rec_build_string($parts[0],$cmdObj,$the_or);
+$this->rec_build_string($parts[1],$cmdObj,array());
+return true ;
  }
-if ($item > 3) throw new GWException("GWQL SYNTAX ERROR at " . $v[$item],23);
-if ($FD == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING FIELD IN " . $inputstr,24);
-if ($OP == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING OPERATOR IN " . $inputstr,25);
-if ($VL == "NULL") throw new GWException("GWQL SYNTAX ERROR MISSING VALUE IN " . $inputstr,26);
-$field=$FD;
-$operator=$OP;
-$value=$VL;
-//echo "here!: $value\n";
-return true;
+
+$parts = explode (" _AND_ ",$cmp);
+$the_and=array();
+array_push($the_and,"AND");
+$this->rec_build_string($parts[0],$cmdObj,$the_and);
+$this->rec_build_string($parts[1],$cmdObj,array());
+return true ;
+
 }
 
-
+public function getParams()
+{
+return $this->Params;
+}
 }
 ?>

@@ -79,16 +79,16 @@ if (is_file($FromLocation))
     }
 
 	}
-else
-{
-//echo "Try DB Connection here";
+
 try {
 $PD = new GWDBConnection($FromLocation);
 $stmt = $PD->prepare("CALL GetSetting (?);");
-$item="LogVerbosity";
+$item=$SettingName;
+//$item="LogVerbosity";
 $stmt->bindParam(1,$item);
 $stmt->execute();
 $rows=$stmt->fetch(PDO::FETCH_ASSOC);
+
 //$rows=$stmt->fetchAll(PDO::FETCH_NUM);
 if ($rows) 
 {
@@ -103,8 +103,7 @@ catch (PDOException $e)
 return $DefaultValue;
 }
 
-}
- 
+
 	//If we got here nothing else matched
 	return $DefaultValue;
 }
@@ -124,4 +123,3 @@ function GetSettingReverse($FromLocation,$SettingName,$DefaultValue="")
 
 
 }
-?>

@@ -2,7 +2,7 @@
 <WebServices>
 <OperationName>Add</OperationName>
 <OperationType>Math.Add(A,B)</OperationType>
-<OperationSource>/home/adminbrad/php/gwPHPTools/tests/test.class.php</OperationSource>
+<OperationSource>/cygdrive/h/prog/php/gw-php-tools/vendor/geekwisdom/gw-php-tools/tests/test.class.php</OperationSource>
 </WebServices>
 <WebServices>
 <OperationName>ShowTable</OperationName>

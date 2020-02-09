@@ -20,6 +20,7 @@ require_once __DIR__ . '/../../../autoload.php'; // Autoload files using
 use \org\geekwisdom\GWRowInterface;
 use \org\geekwisdom\GWDataRow;
 use \org\geekwisdom\GWQL;
+use \org\geekwisdom\GWQLXPathBuilder;
 use \SimpleXMLElement;
 use \DOMDocument;
 class GWDataTable
@@ -41,16 +42,15 @@ function getTableName()
 return $this->tablename;
 }
 
-function find($whereclause,$data_type = null)
+function find($qlwhereclause,$data_type = null)
 {
-$qry=$whereclause;
-if (substr($whereclause,0,2) == "[ ")
- {
-$ary=$this->toArray();
-$qltester = new GWQL($whereclause);
-$qry = $qltester->getXPath();
-//echo "Q is $qry\n";
- }
+
+$xPathTester = new GWQL($qlwhereclause);
+$myxpath = new GWQLXPathBuilder();
+
+
+$qry="";
+$qry = $xPathTester->getCommand($myxpath);
 
 if ($data_type == null) $data_type=$this->defobject;
 $data=$this->toXml();

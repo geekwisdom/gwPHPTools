@@ -1,5 +1,6 @@
-mysql:host=192.168.9.99
-dbname=braddb
+mysql:host=localhost
+dbname=test
 charset=utf8
-uid=brad
-pw=******
+uid=adminbrad
+pw=password
+d

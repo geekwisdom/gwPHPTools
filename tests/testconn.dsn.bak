@@ -1,0 +1,5 @@
+mysql:host=192.168.0.1
+dbname=braddb
+charset=utf8
+uid=adminbrad
+pw=blc4fr
