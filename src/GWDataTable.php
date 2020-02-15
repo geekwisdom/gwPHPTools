@@ -219,11 +219,20 @@ else
 
 function toJSON()
 {
+
+
 $xml = $this->toXML();
 $xmlary = simplexml_load_string($xml);
-$json = json_encode($xmlary);
+$array = array($this->tablename => array());
+ foreach ($xmlary as $key => $value) 
+ {
+    $array[$key][] = $value;
+ }
+
+$json=json_encode($array);
 return $json;
 }
+
 function toXml()
 {
 //output result as xml / set xml
