@@ -1,20 +1,3 @@
-# gwPHPTools
-GeekWisdom PHP Objects
+# gwPHPTools - Geek Wisdom Tools / Shared Components as implemented in PHP
 
-Tool Architecture
-
-gwLogger: Simple Logging Platform
-
-gwLogger->LogInfo ($LogItem, $LogLevel,$ltype,$message,$exception)
-
-------------------
-
-gwSettings: Simple Settings Get/Set
-
-gwSettings->GetSetting($FromLocation,$SettingName,$DefaultValue)
-gwSetting->WriteSetting($ToLocation,$SettingName,$SettingValue)
-
-----------------------
-
-gwDataTable: Data Table Object
-
+For documentation on the GeekWisdom tools see: https://github.com/geekwisdom/gwDocs/blob/master/README.md
